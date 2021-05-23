@@ -1,6 +1,6 @@
 import { getAuth, onAuthStateChanged } from '@firebase/auth'
 import { initializeApp } from 'firebase/app'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext, createContext } from 'react'
 
 export const firebaseApp = initializeApp({
   apiKey: 'AIzaSyCKEKpLKAad62VwyRx_J9Qe7_3R7o33JIY',
@@ -12,7 +12,9 @@ export const firebaseApp = initializeApp({
   measurementId: 'G-2FK5XC92GY'
 })
 
-export const useAuthState = () => {
+export const AuthContext = createContext()
+
+export const AuthContextProvider = props => {
   const [user, setUser] = useState()
   const [error, setError] = useState()
 
@@ -20,8 +22,10 @@ export const useAuthState = () => {
     const unsubscribe = onAuthStateChanged(getAuth(), setUser, setError)
     return () => unsubscribe()
   }, [])
+  return <AuthContext.Provider value={{ user, error }} {...props} />
+}
 
-  const isAuthenticated = user != null
-
-  return { user, error, isAuthenticated }
+export const useAuthState = () => {
+  const auth = useContext(AuthContext)
+  return { ...auth, isAuthenticated: auth.user != null }
 }
